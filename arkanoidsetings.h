@@ -1,5 +1,5 @@
-#ifndef ARKANOIDSETINGS_H
-#define ARKANOIDSETINGS_H
+#ifndef _ARKANOIDSETINGS_H
+#define _ARKANOIDSETINGS_H
 
 // all size definetion set in PIXELS
 
@@ -9,11 +9,15 @@
 #define PLATFORM_HEIGHT 10
 #define PLATFORM_WIDTH  80
 
-#define OBJ_QYANTITY    20
+#define OBJ_QYANTITY    43
 #define OBJ_HEIGHT      20
 #define OBJ_WIDTH       40
 
-#define BALL_RADIUS     2
+#define BALL_RADIUS     4
 
+#define BALL_INIT_SPEED 10
+
+#define FRAME_RATE_MS   100
+#define BALL_DIRECTION_RADIOUS   512
 
 #endif // ARKANOIDSETINGS_H

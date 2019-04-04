@@ -27,12 +27,12 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    arkonoidEngeen/arkonoidEngeen.c
+    arkonoidEngeen/arkanoidEngeen.c
 
 HEADERS += \
         mainwindow.h \
-    arkonoidEngeen/arkonoidEngeen.h \
-    arkanoidsetings.h
+    arkanoidsetings.h \
+    arkonoidEngeen/arkanoidEngeen.h
 
 FORMS += \
         mainwindow.ui
