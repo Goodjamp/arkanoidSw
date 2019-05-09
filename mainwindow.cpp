@@ -28,9 +28,10 @@ MainWindow::MainWindow(QWidget *parent) :
     yBall_1 = 0;
     xBall_0 = 0;
     yBall_1 = 0;
-    directionAngle = M_PI / 2;
-    dirX = ballX + static_cast<int32_t>(100 * cosf(directionAngle));
-    dirY = ballY - static_cast<int32_t>(100 * sinf(directionAngle));
+    lineDirectionAngle = M_PI / 2;
+    arkanoidDirectionAngle = M_PI / 2;
+    dirX = ballX + static_cast<int32_t>(100 * cosf(lineDirectionAngle));
+    dirY = ballY - static_cast<int32_t>(100 * sinf(lineDirectionAngle));
 
     initGame();
     update();
@@ -44,11 +45,13 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
 void MainWindow::updateState(void)
 {
-    gameTimeMs += FRAME_RATE_MS;
+    gameTimeMs += 8;//FRAME_RATE_MS;
     arkanoidUpdate(arkanoidH, gameTimeMs);
     xBall_0 = xBall_1;
     yBall_0 = yBall_1;
     arkanoidGetBallPos(arkanoidH, &xBall_1, &yBall_1);
+    qDebug()<<"xBall_1 = "<<xBall_1;
+    qDebug()<<"yBall_1 = "<<yBall_1;
     this->update();
     ball->move(xBall_1, yBall_1);
     for(uint16_t k = 0; k < OBJ_QYANTITY; k++) {
@@ -65,7 +68,7 @@ bool MainWindow::initGame(void)
     gameStatus = GAME_WAIT_START;
     //init game status and variables
     uint32_t shiftBorder = BALL_RADIUS;
-    platformSpeed  = BALL_INIT_SPEED;
+    platformSpeed  = PLATFORM_SPEED;
     gameTimeMs     = 0;
     platformX      = AREA_WIDTH / 2 - PLATFORM_WIDTH / 2;
     platformY      = AREA_HEIGHT -  PLATFORM_HEIGHT;
@@ -135,14 +138,16 @@ bool MainWindow::initGame(void)
     arkanoidConfig.ballSpeed       = BALL_INIT_SPEED;
 
     arkanoidH = arkanoidInit(arkanoidConfig);
+    arkanoidSetDirection(arkanoidH, 100, -0, -100);
+    arkanoidSetBallPos(arkanoidH, ballX, ballY);
     gameStatus = GAME_WAIT_START;
     return true;
 }
 
 void  MainWindow::updateaBallDirection(void)
 {
-    dirX = ballX + static_cast<int32_t>(100 * cosf(directionAngle));
-    dirY = ballY - static_cast<int32_t>(100 * sinf(directionAngle));
+    dirX = ballX + static_cast<int32_t>(100 * cosf(lineDirectionAngle));
+    dirY = ballY - static_cast<int32_t>(100 * sinf(lineDirectionAngle));
 }
 
 void MainWindow::keyEventPos(KeyEven keyEven)
@@ -150,8 +155,8 @@ void MainWindow::keyEventPos(KeyEven keyEven)
     switch(keyEven) {
     case EVENT_PLATFORM_MOVE_LEFT:
         if(gameStatus == GAME_WAIT_START) {
-            if((directionAngle + 0.1) < M_PI) {
-                directionAngle += 0.1;
+            if((lineDirectionAngle + 0.1) < M_PI) {
+                lineDirectionAngle += 0.1;
             }
             break;
         }
@@ -160,6 +165,7 @@ void MainWindow::keyEventPos(KeyEven keyEven)
             return;
         }
         platformX -= platformSpeed;
+        arkanoidSetPlatformPos(arkanoidH, platformX, platformY);
         platform->move(platform->pos().x() - platformSpeed, platform->pos().y());
         if(gameStatus == GAME_WAIT_START) {
             ballX -=  platformSpeed;
@@ -167,8 +173,8 @@ void MainWindow::keyEventPos(KeyEven keyEven)
         break;
     case EVENT_PLATFORM_MOVE_RIGHT:
         if(gameStatus == GAME_WAIT_START) {
-            if((directionAngle - 0.1) > 0) {
-                directionAngle -= 0.1;
+            if((lineDirectionAngle - 0.1) > 0) {
+                lineDirectionAngle -= 0.1;
             }
             break;
         }
@@ -178,6 +184,7 @@ void MainWindow::keyEventPos(KeyEven keyEven)
         }
         platformX += platformSpeed;
         platform->move(platform->pos().x() + platformSpeed, platform->pos().y());
+        arkanoidSetPlatformPos(arkanoidH, platformX, platformY);
         if(gameStatus == GAME_WAIT_START) {
             ballX +=  platformSpeed;
         }
@@ -185,6 +192,7 @@ void MainWindow::keyEventPos(KeyEven keyEven)
     case EVENT_GAME_START:
         gameStatus = GAME_PLAY;
         updateTimer->start();
+        updateState();
         break;
     }
 
@@ -192,6 +200,11 @@ void MainWindow::keyEventPos(KeyEven keyEven)
         //ball->move(ballX - BALL_RADIUS, ballY - BALL_RADIUS);
         //arkanoidSetPlatformPos(arkanoidH, ballX, ballY);
         updateaBallDirection();
+        arkanoidSetDirection(arkanoidH, 100,
+                                        100 * cosf(2 * M_PI - lineDirectionAngle),
+                                        100 * sinf(2 * M_PI - lineDirectionAngle));
+        qDebug()<<"Direction X = "<<int32_t(100 * cosf(2 * M_PI - lineDirectionAngle));
+        qDebug()<<"Direction Y = "<<int32_t(100 * sinf(2 * M_PI - lineDirectionAngle));
         this->update();
     }
     arkanoidSetPlatformPos(arkanoidH, platformX, platformY);
@@ -210,6 +223,9 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
             break;
         case Qt::Key_Q:
             keyEventPos(EVENT_GAME_START);
+            break;
+        case Qt::Key_Z:
+            keyEventPos(EVENT_GAME_STEP);
             break;
         default: break;
         }

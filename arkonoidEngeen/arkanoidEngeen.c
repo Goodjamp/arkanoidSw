@@ -3,16 +3,20 @@
 #include "stddef.h"
 #include "math.h"
 
+
 #include "arkanoidEngeen.h"
 
 #include "stdio.h"
 
+#define MAX_INT (~(uint32_t)0 >> 1)
+static const int32_t minMinus = ~(~(uint32_t)0 >> 1);
+
 typedef struct ArkanoidDeskriptor {
     ElementDescr   *elementList;
-    int32_t       platformHeight;
-    int32_t       platformWidth;
-    int32_t       areaHeight;
-    int32_t       areaWidth;
+    int32_t        platformHeight;
+    int32_t        platformWidth;
+    int32_t        areaHeight;
+    int32_t        areaWidth;
     int32_t        ballSpeed;
     ArkanoidStatus status;
     int32_t        platformPosX;
@@ -25,8 +29,12 @@ typedef struct ArkanoidDeskriptor {
     uint32_t       time;
     uint16_t       elementQuantity;
     struct {
+        int32_t  x;
+        int32_t  y;
+        bool     isVertical;
+        int32_t  dist;
         uint16_t cnt;
-        uint16_t index[40];
+        uint16_t list[10];
     }cross;
 } ArkanoidDeskriptor;
 
@@ -53,9 +61,9 @@ static inline bool isCrose(int32_t x11, int32_t x21, int32_t y11, int32_t y21,
         .x = x22 - x11,
         .y = y22 - y11,
     };
-    int32_t z11 = v1.x * v11.y - v1.y * v11.x;
-    int32_t z12 = v1.x * v12.y - v1.y * v12.x;
-    if((z11 * z12) > 0) {
+    int32_t z11 = ((v1.x * v11.y - v1.y * v11.x) > 0) ? (1) : (-1);
+    int32_t z12 = ((v1.x * v12.y - v1.y * v12.x) > 0) ? (1) : (-1);
+    if((z11 * z12) >= 0) {
         return false;
     }
     // line 1 cross line 2
@@ -71,10 +79,10 @@ static inline bool isCrose(int32_t x11, int32_t x21, int32_t y11, int32_t y21,
         .x = x21 - x12,
         .y = y21 - y12,
     };
-    int32_t z21 = v2.x * v21.y - v2.y * v21.x;
-    int32_t z22 = v2.x * v22.y - v2.y * v22.x;
-    printf("z22  = %d\n", z22);
-    if((z21 * z22) > 0) {
+    int32_t z21 = ((v2.x * v21.y - v2.y * v21.x) > 0) ? (1) : (-1);
+    int32_t z22 = ((v2.x * v22.y - v2.y * v22.x) > 0) ? (1) : (-1);
+    //printf("z22  = %d\n", z22);
+    if((z21 * z22) >= 0) {
         return false;
     }
     return true;
@@ -95,7 +103,6 @@ ArkanoidH arkanoidInit(ArkanoidConfig arkanoidConfig)
     arkanoidExample[itemCount].areaHeight      = arkanoidConfig.areaHeight;
     arkanoidExample[itemCount].areaWidth       = arkanoidConfig.areaWidth;
     arkanoidExample[itemCount].ballSpeed       = arkanoidConfig.ballSpeed;
-    arkanoidSetDirection(&arkanoidExample[itemCount], arkanoidConfig.dirX, arkanoidConfig.dirY);
 
     for(uint32_t k = 0; k < arkanoidExample[itemCount].elementQuantity; k++) {
         arkanoidExample[itemCount].elementList[k].isPresent = true;
@@ -115,20 +122,45 @@ ArkanoidStatus arkanoidSetSpeed(ArkanoidH arkanoidItem, uint8_t ballSpeed)
     return arkanoidItem->status;
 }
 
-ArkanoidStatus arkanoidSetDirection(ArkanoidH arkanoidItem, int32_t dirX, int32_t dirY) {
-    arkanoidItem->dirX            = dirX;
-    arkanoidItem->dirY            = dirY;
-    arkanoidItem->dirLength       = sqrt(arkanoidItem->dirX * arkanoidItem->dirX
-                                         + arkanoidItem->dirY * arkanoidItem->dirY);
-
+ArkanoidStatus arkanoidSetDirection(ArkanoidH arkanoidItem, int32_t dirLen, int32_t dirX, int32_t dirY) {
+    arkanoidItem->dirX  = dirX;
+    arkanoidItem->dirY  = dirY;
+    arkanoidItem->dirLength = dirLen;
 }
 
-static inline void lineCrossPoint(int32_t x11, int32_t x21, int32_t y11, int32_t y21,
-                                  int32_t x12, int32_t x22, int32_t y12, int32_t y22)
+static inline bool analyseCross(ArkanoidH arkanoidItem, int32_t AL, int32_t BL, int32_t CL,
+                         int32_t segment1_X1, int32_t segment1_X2, int32_t segment1_Y1, int32_t segment1_Y2,
+                         int32_t segment2_X1, int32_t segment2_X2, int32_t segment2_Y1, int32_t segment2_Y2)
 {
+    if(!isCrose(segment1_X1, segment1_X2, segment1_Y1, segment1_Y2,
+               segment2_X1, segment2_X2, segment2_Y1, segment2_Y2)) {
+        return false;
+    }
+    int32_t crosDist;
+    bool isVertical = false;
+    if(segment2_X1 == segment2_X2) {
+        isVertical = true;
+        arkanoidItem->cross.x = segment2_X1;
+        arkanoidItem->cross.y = (BL * arkanoidItem->cross.x + CL) / AL;
+    } else {
+        arkanoidItem->cross.y = segment2_Y1;
+        arkanoidItem->cross.x = (AL * arkanoidItem->cross.y - CL) / BL;
+    }
 
+    if(!((crosDist = (arkanoidItem->cross.x - segment1_X1) * (arkanoidItem->cross.x - segment1_X1)
+                   + (arkanoidItem->cross.y - segment1_Y1) * (arkanoidItem->cross.y - segment1_Y1)) < arkanoidItem->cross.dist)) {
+       return false;
+    }
+    if(arkanoidItem->cross.dist ==  crosDist) {
+        /*TODO increase counter of cross.... realy ??*/
+        return false;
+    }
+    arkanoidItem->cross.dist = crosDist;
+    arkanoidItem->cross.isVertical = isVertical;
+    arkanoidItem->cross.cnt = 1;
+    //arkanoidItem->cross.index[0] = k;
+    return true;
 }
-
 
 ArkanoidStatus arkanoidUpdate(ArkanoidH arkanoidItem, uint32_t currentTime)
 {
@@ -136,110 +168,124 @@ ArkanoidStatus arkanoidUpdate(ArkanoidH arkanoidItem, uint32_t currentTime)
     if( (time = currentTime - arkanoidItem->time) <= 0 ) {
         return arkanoidItem->status = STATUS_ERRO;
     }
+    arkanoidItem->time = currentTime;
     int32_t currentDist = arkanoidItem->ballSpeed * time;
     int32_t currentX    = (currentDist * arkanoidItem->dirX) / arkanoidItem->dirLength + arkanoidItem->ballPosX;
     int32_t currentY    = (currentDist * arkanoidItem->dirY) / arkanoidItem->dirLength + arkanoidItem->ballPosY;
-    int32_t minDist;
-    int32_t crosX;
-    int32_t crosY;
-    int32_t crosDist;
     int32_t AL, BL, CL;
     arkanoidItem->cross.cnt = 0;
-    bool isVertical;
     while(true) {
-        minDist = -1;
+        arkanoidItem->cross.dist = MAX_INT;
         AL = arkanoidItem->ballPosX - currentX;
         BL = arkanoidItem->ballPosY - currentY;
-        CL = arkanoidItem->ballPosY * currentX - arkanoidItem->ballPosX * currentY;
 
+        //CL = (currentDist * arkanoidItem->dirY * arkanoidItem->ballPosX) / arkanoidItem->dirLength + arkanoidItem->ballPosX * arkanoidItem->ballPosY -
+             ((currentDist * arkanoidItem->dirX * arkanoidItem->ballPosY) / arkanoidItem->dirLength + arkanoidItem->ballPosY * arkanoidItem->ballPosX);
+
+        CL = arkanoidItem->ballPosX * currentY - arkanoidItem->ballPosY * currentX;
+
+        // Cross with objects
         for(uint16_t k = 0; k < arkanoidItem->elementQuantity; k++) {
+            if(!arkanoidItem->elementList[k].isPresent) { // if element was deleted
+                continue;
+            }
             // twoo vertical side
-            if(isCrose(arkanoidItem->ballPosX, currentX, arkanoidItem->ballPosY, currentY,
-                       arkanoidItem->elementList[k].x1, arkanoidItem->elementList[k].x1,
-                       arkanoidItem->elementList[k].y1, arkanoidItem->elementList[k].y2)) {
-                crosX = arkanoidItem->elementList[k].x1;
-                crosY = (BL * crosX + CL) / AL;
-                if((crosDist = (crosX - arkanoidItem->ballPosX) * (crosX - arkanoidItem->ballPosX)
-                               + (crosX - arkanoidItem->ballPosY) * (crosX - arkanoidItem->ballPosY)) < minDist) {
-                    minDist = crosDist;
-                    isVertical = true;
-                    arkanoidItem->cross.cnt = 1;
-                } else if(crosDist ==  minDist) {
+            if(analyseCross(arkanoidItem, AL, BL, CL,
+                         arkanoidItem->ballPosX, currentX, arkanoidItem->ballPosY, currentY,
+                         arkanoidItem->elementList[k].x1, arkanoidItem->elementList[k].x1,
+                         arkanoidItem->elementList[k].y1, arkanoidItem->elementList[k].y2)) {
+                arkanoidItem->cross.list[0] = k;
+            };
 
-                }
-            }
-            if(isCrose(arkanoidItem->ballPosX, currentX, arkanoidItem->ballPosY, currentY,
-                       arkanoidItem->elementList[k].x2, arkanoidItem->elementList[k].x2,
-                       arkanoidItem->elementList[k].y1, arkanoidItem->elementList[k].y2)) {
-                crosX = arkanoidItem->elementList[k].x2;
-                crosY = (BL * crosX + CL) / AL;
-                if((crosDist = (crosX - arkanoidItem->ballPosX) * (crosX - arkanoidItem->ballPosX)
-                               + (crosX - arkanoidItem->ballPosY) * (crosX - arkanoidItem->ballPosY)) < minDist) {
-                    minDist = crosDist;
-                    isVertical = true;
-                    arkanoidItem->cross.cnt = 1;
-                } else if(crosDist ==  minDist) {
-
-                }
-            }
+            if(analyseCross(arkanoidItem, AL, BL, CL,
+                         arkanoidItem->ballPosX, currentX, arkanoidItem->ballPosY, currentY,
+                         arkanoidItem->elementList[k].x2, arkanoidItem->elementList[k].x2,
+                         arkanoidItem->elementList[k].y1, arkanoidItem->elementList[k].y2)) {
+                arkanoidItem->cross.list[0] = k;
+            };
             // twoo horizontal side
-            if(isCrose(arkanoidItem->ballPosX, currentX, arkanoidItem->ballPosY, currentY,
-                       arkanoidItem->elementList[k].x1, arkanoidItem->elementList[k].x2,
-                       arkanoidItem->elementList[k].y1, arkanoidItem->elementList[k].y1)) {
-                crosY = arkanoidItem->elementList[k].y1;
-                crosX = (AL * crosY - CL) / BL;
-                if((crosDist = (crosX - arkanoidItem->ballPosX) * (crosX - arkanoidItem->ballPosX)
-                               + (crosX - arkanoidItem->ballPosY) * (crosX - arkanoidItem->ballPosY)) < minDist) {
-                    minDist = crosDist;
-                    isVertical = false;
-                    arkanoidItem->cross.cnt = 1;
-                } else if(crosDist ==  minDist) {
+            if(analyseCross(arkanoidItem, AL, BL, CL,
+                         arkanoidItem->ballPosX, currentX, arkanoidItem->ballPosY, currentY,
+                         arkanoidItem->elementList[k].x1, arkanoidItem->elementList[k].x2,
+                         arkanoidItem->elementList[k].y1, arkanoidItem->elementList[k].y1)) {
+                arkanoidItem->cross.list[0] = k;
+            };
 
-                }
-            }
-            if(isCrose(arkanoidItem->ballPosX, currentX, arkanoidItem->ballPosY, currentY,
-                       arkanoidItem->elementList[k].x1, arkanoidItem->elementList[k].x2,
-                       arkanoidItem->elementList[k].y2, arkanoidItem->elementList[k].y2)) {
-                crosY = arkanoidItem->elementList[k].y2;
-                crosX = (AL * crosY - CL) / BL;
-                if((crosDist = (crosX - arkanoidItem->ballPosX) * (crosX - arkanoidItem->ballPosX)
-                               + (crosX - arkanoidItem->ballPosY) * (crosX - arkanoidItem->ballPosY)) < minDist) {
-                    minDist = crosDist;
-                    isVertical = false;
-                    arkanoidItem->cross.cnt = 1;
-                } else if(crosDist ==  minDist) {
-
-                }
-            }
-
+            if(analyseCross(arkanoidItem, AL, BL, CL,
+                         arkanoidItem->ballPosX, currentX, arkanoidItem->ballPosY, currentY,
+                         arkanoidItem->elementList[k].x1, arkanoidItem->elementList[k].x2,
+                         arkanoidItem->elementList[k].y2, arkanoidItem->elementList[k].y2)) {
+                arkanoidItem->cross.list[0] = k;
+            };
         }
+        /***********Cross with borders*************************************************/
+        // twoo vertical borders
+        if(analyseCross(arkanoidItem, AL, BL, CL,
+                     arkanoidItem->ballPosX, currentX, arkanoidItem->ballPosY, currentY,
+                     0, 0,
+                     0, arkanoidItem->areaHeight)) {
+            arkanoidItem->cross.cnt = 0;
+        };
+
+        if(analyseCross(arkanoidItem, AL, BL, CL,
+                     arkanoidItem->ballPosX, currentX, arkanoidItem->ballPosY, currentY,
+                     arkanoidItem->areaWidth, arkanoidItem->areaWidth,
+                     0, arkanoidItem->areaHeight)) {
+            arkanoidItem->cross.cnt = 0;
+        };
+        // UP horizontal border
+        if(analyseCross(arkanoidItem, AL, BL, CL,
+                     arkanoidItem->ballPosX, currentX, arkanoidItem->ballPosY, currentY,
+                     0, arkanoidItem->areaWidth,
+                     0, 0)) {
+            arkanoidItem->cross.cnt = 0;
+        };
+        /*
+        //ONLY FOR TEST: DOWN horizontal border
+        if(analyseCross(arkanoidItem, AL, BL, CL,
+                     arkanoidItem->ballPosX, currentX, arkanoidItem->ballPosY, currentY,
+                     0, arkanoidItem->areaWidth,
+                     arkanoidItem->areaHeight, arkanoidItem->areaHeight)) {
+            arkanoidItem->cross.cnt = 0;
+        };
+*/
+        /***********Cross with platform******************/
+        //platform UP border
+        if(analyseCross(arkanoidItem, AL, BL, CL,
+                     arkanoidItem->ballPosX, currentX, arkanoidItem->ballPosY, currentY,
+                     arkanoidItem->platformPosX, arkanoidItem->platformPosX + arkanoidItem->platformWidth,
+                     arkanoidItem->platformPosY, arkanoidItem->platformPosY)) {
+            arkanoidItem->cross.cnt = 0;
+        };
+
+
+
         // if no cross
-        if(minDist < 0 ){
+        if(arkanoidItem->cross.dist == MAX_INT){
+            arkanoidItem->ballPosX = currentX;
+            arkanoidItem->ballPosY = currentY;
             break;
         }
-        if(isVertical) {
-
+        if(arkanoidItem->cross.isVertical) { // cross with vertical element
+            arkanoidItem->dirX *= -1;
+        } else {         // cross with horizontal element
+            arkanoidItem->dirY *= -1;
         }
-
-    }
-    arkanoidItem->ballPosX = currentX;
-    arkanoidItem->ballPosY = currentY;
-    /*
-    static uint16_t CNT = 0;
-    float arg = 2.f * M_PI * 1.f * time / 1000.f;
-    arkanoidItem->ballPosX = arkanoidItem->areaWidth / 2 + 50.f * cosf(arg);
-    arkanoidItem->ballPosY = arkanoidItem->areaHeight /2 + 50.f * sinf(arg);
-    for(uint16_t k = 0; k < CNT; k++) {
-        arkanoidItem->elementList[k].isPresent = false;
-    }
-    CNT++;
-    if(CNT >= arkanoidItem->elementQuantity) {
-        for(uint16_t k = 0; k < arkanoidItem->elementQuantity; k++) {
-            arkanoidItem->elementList[k].isPresent = true;
+        int32_t dist= sqrt(arkanoidItem->cross.dist);
+        printf("dist = %d\n", dist);
+        printf("crosX = %d\n", arkanoidItem->cross.x);
+        printf("crosY = %d\n", arkanoidItem->cross.y);
+        arkanoidItem->ballPosX = (dist * arkanoidItem->dirX) / arkanoidItem->dirLength + arkanoidItem->cross.x;
+        arkanoidItem->ballPosY = (dist * arkanoidItem->dirY) / arkanoidItem->dirLength + arkanoidItem->cross.y;
+        // if cross with obj
+        if(arkanoidItem->cross.cnt != 0) {
+            arkanoidItem->elementList[arkanoidItem->cross.list[0]].isPresent = false;
         }
-        CNT = 0;
+        break;
     }
-    */
+
+    //printf("currentX = %d\n", currentX);
+    //printf("currentY = %d\n", currentY);
     return arkanoidItem->status;
 }
 

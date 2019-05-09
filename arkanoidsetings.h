@@ -9,15 +9,16 @@
 #define PLATFORM_HEIGHT 10
 #define PLATFORM_WIDTH  80
 
-#define OBJ_QYANTITY    43
+#define OBJ_QYANTITY    27
 #define OBJ_HEIGHT      20
 #define OBJ_WIDTH       40
 
 #define BALL_RADIUS     4
 
-#define BALL_INIT_SPEED 10
+#define BALL_INIT_SPEED 1
 
-#define FRAME_RATE_MS   100
+#define FRAME_RATE_MS   40
+#define PLATFORM_SPEED  7
 #define BALL_DIRECTION_RADIOUS   512
 
 #endif // ARKANOIDSETINGS_H

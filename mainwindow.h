@@ -23,6 +23,7 @@ typedef enum{
     EVENT_PLATFORM_MOVE_LEFT,
     EVENT_PLATFORM_MOVE_RIGHT,
     EVENT_GAME_START,
+    EVENT_GAME_STEP,
 }KeyEven;
 
 namespace Ui {
@@ -67,7 +68,8 @@ private:
     // direction of ball
     int32_t dirX;
     int32_t dirY;
-    float  directionAngle;
+    float  lineDirectionAngle;
+    float  arkanoidDirectionAngle;
     //Current game state
     int32_t xBall_0;
     int32_t xBall_1;
