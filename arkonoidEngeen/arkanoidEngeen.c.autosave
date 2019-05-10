@@ -160,9 +160,11 @@ static inline bool analyseCross(ArkanoidH arkanoidItem, int32_t AL, int32_t BL, 
         arkanoidItem->cross.y = segment2_Y1;
         arkanoidItem->cross.x = (AL * arkanoidItem->cross.y - CL) / BL;
     }
+    arkanoidItem->cross.dx = arkanoidItem->cross.x - segment1_X1;
+    arkanoidItem->cross.dy = arkanoidItem->cross.y - segment1_Y1;
 
-    if(!((crosDist = (arkanoidItem->cross.x - segment1_X1) * (arkanoidItem->cross.x - segment1_X1)
-                   + (arkanoidItem->cross.y - segment1_Y1) * (arkanoidItem->cross.y - segment1_Y1)) < arkanoidItem->cross.dist)) {
+    if(!((crosDist = (arkanoidItem->cross.dx * arkanoidItem->cross.dx)
+                   + (arkanoidItem->cross.dx * arkanoidItem->cross.dx)) < arkanoidItem->cross.dist)) {
        return false;
     }
     if(arkanoidItem->cross.dist ==  crosDist) {

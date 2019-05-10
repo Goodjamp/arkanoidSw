@@ -9,7 +9,7 @@
 #define PLATFORM_HEIGHT 10
 #define PLATFORM_WIDTH  80
 
-#define OBJ_QYANTITY    27
+#define OBJ_QYANTITY    43
 #define OBJ_HEIGHT      20
 #define OBJ_WIDTH       40
 
