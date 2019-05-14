@@ -1,7 +1,6 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "stddef.h"
-#include "math.h"
 
 
 #include "arkanoidEngeen.h"
@@ -160,9 +159,11 @@ static inline bool analyseCross(ArkanoidH arkanoidItem, int32_t AL, int32_t BL, 
         arkanoidItem->cross.y = segment2_Y1;
         arkanoidItem->cross.x = (AL * arkanoidItem->cross.y - CL) / BL;
     }
+    arkanoidItem->cross.dx = arkanoidItem->cross.x - segment1_X1;
+    arkanoidItem->cross.dy = arkanoidItem->cross.y - segment1_Y1;
 
-    if(!((crosDist = (arkanoidItem->cross.x - segment1_X1) * (arkanoidItem->cross.x - segment1_X1)
-                   + (arkanoidItem->cross.y - segment1_Y1) * (arkanoidItem->cross.y - segment1_Y1)) < arkanoidItem->cross.dist)) {
+    if(!((crosDist = (arkanoidItem->cross.dx * arkanoidItem->cross.dx)
+                   + (arkanoidItem->cross.dy * arkanoidItem->cross.dy)) < arkanoidItem->cross.dist)) {
        return false;
     }
     if(arkanoidItem->cross.dist ==  crosDist) {
@@ -273,7 +274,7 @@ ArkanoidStatus arkanoidUpdate(ArkanoidH arkanoidItem, uint32_t currentTime)
         };
 
         // if no cross
-        if(arkanoidItem->cross.dist == MAX_INT){
+        if((arkanoidItem->cross.dist == MAX_INT) || (arkanoidItem->cross.dist == 0)){
             arkanoidItem->ballPosX = currentX;
             arkanoidItem->ballPosY = currentY;
             break;
@@ -283,7 +284,12 @@ ArkanoidStatus arkanoidUpdate(ArkanoidH arkanoidItem, uint32_t currentTime)
         } else {         // cross with horizontal element
             arkanoidItem->dirY *= -1;
         }
-        int32_t dist= sqrt(arkanoidItem->cross.dist);
+        int32_t dist = (arkanoidItem->cross.dx) ?
+                       (currentDist * (arkanoidItem->ballPosX - currentX)) / arkanoidItem->cross.dx :
+                       (currentDist * (arkanoidItem->ballPosY - currentY)) / arkanoidItem->cross.dy;
+        if(dist < 0) {
+            dist = (-1) * dist;
+        }
         printf("dist = %d\n", dist);
         printf("crosX = %d\n", arkanoidItem->cross.x);
         printf("crosY = %d\n", arkanoidItem->cross.y);
