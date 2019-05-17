@@ -9,13 +9,13 @@
 #define PLATFORM_HEIGHT 10
 #define PLATFORM_WIDTH  80
 
-#define OBJ_QYANTITY    2
+#define OBJ_QYANTITY    43
 #define OBJ_HEIGHT      20
 #define OBJ_WIDTH       40
 
 #define BALL_RADIUS     4
 
-#define BALL_INIT_SPEED 1
+#define BALL_INIT_SPEED 2
 
 #define FRAME_RATE_MS   40
 #define PLATFORM_SPEED  7

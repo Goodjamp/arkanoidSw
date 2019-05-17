@@ -195,7 +195,7 @@ ArkanoidStatus arkanoidUpdate(ArkanoidH arkanoidItem, uint32_t currentTime)
         BL = arkanoidItem->ballPosY - currentY;
 
         //CL = (currentDist * arkanoidItem->dirY * arkanoidItem->ballPosX) / arkanoidItem->dirLength + arkanoidItem->ballPosX * arkanoidItem->ballPosY -
-             ((currentDist * arkanoidItem->dirX * arkanoidItem->ballPosY) / arkanoidItem->dirLength + arkanoidItem->ballPosY * arkanoidItem->ballPosX);
+        //     ((currentDist * arkanoidItem->dirX * arkanoidItem->ballPosY) / arkanoidItem->dirLength + arkanoidItem->ballPosY * arkanoidItem->ballPosX);
 
         CL = arkanoidItem->ballPosX * currentY - arkanoidItem->ballPosY * currentX;
 
@@ -284,18 +284,18 @@ ArkanoidStatus arkanoidUpdate(ArkanoidH arkanoidItem, uint32_t currentTime)
         } else {         // cross with horizontal element
             arkanoidItem->dirY *= -1;
         }
+        // distance to cross point
         int32_t dist = (arkanoidItem->cross.dx) ?
-                       (currentDist * (arkanoidItem->ballPosX - currentX)) / arkanoidItem->cross.dx :
-                       (currentDist * (arkanoidItem->ballPosY - currentY)) / arkanoidItem->cross.dy;
+                       (currentDist * arkanoidItem->cross.dx) /  (arkanoidItem->ballPosX - currentX):
+                       (currentDist * arkanoidItem->cross.dy) / (arkanoidItem->ballPosY - currentY);
         if(dist < 0) {
-            dist = (-1) * dist;
+            currentDist += dist;
+        } else {
+            currentDist -= dist;
         }
-        printf("dist = %d\n", dist);
-        printf("crosX = %d\n", arkanoidItem->cross.x);
-        printf("crosY = %d\n", arkanoidItem->cross.y);
         if(dist != 0) {
-            arkanoidItem->ballPosX = (dist * arkanoidItem->dirX) / arkanoidItem->dirLength + arkanoidItem->cross.x;
-            arkanoidItem->ballPosY = (dist * arkanoidItem->dirY) / arkanoidItem->dirLength + arkanoidItem->cross.y;
+            arkanoidItem->ballPosX = (currentDist * arkanoidItem->dirX) / arkanoidItem->dirLength + arkanoidItem->cross.x;
+            arkanoidItem->ballPosY = (currentDist * arkanoidItem->dirY) / arkanoidItem->dirLength + arkanoidItem->cross.y;
         } else {
             arkanoidItem->ballPosX = currentX;
             arkanoidItem->ballPosY = currentY;
@@ -306,9 +306,6 @@ ArkanoidStatus arkanoidUpdate(ArkanoidH arkanoidItem, uint32_t currentTime)
         }
         break;
     }
-
-    //printf("currentX = %d\n", currentX);
-    //printf("currentY = %d\n", currentY);
     return arkanoidItem->status;
 }
 

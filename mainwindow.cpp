@@ -168,7 +168,7 @@ void MainWindow::keyEventPos(KeyEven keyEven)
         arkanoidSetPlatformPos(arkanoidH, platformX, platformY);
         platform->move(platform->pos().x() - platformSpeed, platform->pos().y());
         if(gameStatus == GAME_WAIT_START) {
-            ballX -=  platformSpeed;
+            ballX -= platformSpeed;
         }
         break;
     case EVENT_PLATFORM_MOVE_RIGHT:
@@ -180,9 +180,10 @@ void MainWindow::keyEventPos(KeyEven keyEven)
         }
 
         if(platformX + platformSpeed + PLATFORM_WIDTH > AREA_WIDTH) {
-            return;
+            platformX = AREA_WIDTH - PLATFORM_WIDTH;
+        } else {
+            platformX += platformSpeed;
         }
-        platformX += platformSpeed;
         platform->move(platform->pos().x() + platformSpeed, platform->pos().y());
         arkanoidSetPlatformPos(arkanoidH, platformX, platformY);
         if(gameStatus == GAME_WAIT_START) {

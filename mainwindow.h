@@ -38,7 +38,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-protected:
+private:
     void keyPressEvent(QKeyEvent *event);
 private:
     Ui::MainWindow *ui;
