@@ -39,16 +39,17 @@ typedef struct {
 
 typedef struct ArkanoidConfig{
     ElementDescr *elementList;
-    int32_t     platformHeight;
-    int32_t     platformWidth;
-    int32_t     areaHeight;
-    int32_t     areaWidth;
+    int32_t      platformHeight;
+    int32_t      platformWidth;
+    int32_t      areaHeight;
+    int32_t      areaWidth;
     int32_t      platformPosX;
     int32_t      platformPosY;
     int32_t      ballSpeed;
     int32_t      dirX;
     int32_t      dirY;
     uint16_t     elementQuantity;
+    uint32_t     pointsPerFrame;
 }ArkanoidConfig;
 
 typedef struct ArkanoidDeskriptor *ArkanoidH;

@@ -4,6 +4,7 @@
 #include "stdint.h"
 #include "QDebug"
 #include "QPainter"
+#include "QtMath"
 
 extern "C" {
 #include "arkonoidEngeen/arkanoidEngeen.h"
@@ -51,7 +52,7 @@ void MainWindow::updateState(void)
     yBall_0 = yBall_1;
     arkanoidGetBallPos(arkanoidH, &xBall_1, &yBall_1);
     qDebug()<<"xBall_1 = "<<xBall_1;
-    qDebug()<<"yBall_1 = "<<yBall_1;
+    qDebug()<<"yBaqll_1 = "<<yBall_1;
     this->update();
     ball->move(xBall_1, yBall_1);
     for(uint16_t k = 0; k < OBJ_QYANTITY; k++) {
@@ -136,6 +137,7 @@ bool MainWindow::initGame(void)
     arkanoidConfig.areaHeight      = AREA_HEIGHT;
     arkanoidConfig.areaWidth       = AREA_WIDTH;
     arkanoidConfig.ballSpeed       = BALL_INIT_SPEED;
+    arkanoidConfig.pointsPerFrame  = 5;
 
     arkanoidH = arkanoidInit(arkanoidConfig);
     arkanoidSetDirection(arkanoidH, 100, -0, -100);

@@ -7,17 +7,17 @@
 #define AREA_WIDTH      400
 
 #define PLATFORM_HEIGHT 10
-#define PLATFORM_WIDTH  80
+#define PLATFORM_WIDTH  500
 
 #define OBJ_QYANTITY    43
 #define OBJ_HEIGHT      20
 #define OBJ_WIDTH       40
 
-#define BALL_RADIUS     4
+#define BALL_RADIUS    4
 
-#define BALL_INIT_SPEED 2
+#define BALL_INIT_SPEED 8
 
-#define FRAME_RATE_MS   40
+#define FRAME_RATE_MS   10
 #define PLATFORM_SPEED  7
 #define BALL_DIRECTION_RADIOUS   512
 
