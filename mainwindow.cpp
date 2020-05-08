@@ -47,7 +47,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
 void MainWindow::updateState(void)
 {
     gameTimeMs += 8;//FRAME_RATE_MS;
-    arkanoidUpdate(arkanoidH, gameTimeMs);
+    arkanoidUpdate(arkanoidH);
     xBall_0 = xBall_1;
     yBall_0 = yBall_1;
     arkanoidGetBallPos(arkanoidH, &xBall_1, &yBall_1);
@@ -140,7 +140,7 @@ bool MainWindow::initGame(void)
     arkanoidConfig.pointsPerFrame  = 5;
 
     arkanoidH = arkanoidInit(arkanoidConfig);
-    arkanoidSetDirection(arkanoidH, 100, -0, -100);
+    arkanoidSetDirection(arkanoidH,  -0, -100);
     arkanoidSetBallPos(arkanoidH, ballX, ballY);
     gameStatus = GAME_WAIT_START;
     return true;
@@ -203,8 +203,7 @@ void MainWindow::keyEventPos(KeyEven keyEven)
         //ball->move(ballX - BALL_RADIUS, ballY - BALL_RADIUS);
         //arkanoidSetPlatformPos(arkanoidH, ballX, ballY);
         updateaBallDirection();
-        arkanoidSetDirection(arkanoidH, 100,
-                                        100 * cosf(2 * M_PI - lineDirectionAngle),
+        arkanoidSetDirection(arkanoidH, 100 * cosf(2 * M_PI - lineDirectionAngle),
                                         100 * sinf(2 * M_PI - lineDirectionAngle));
         qDebug()<<"Direction X = "<<int32_t(100 * cosf(2 * M_PI - lineDirectionAngle));
         qDebug()<<"Direction Y = "<<int32_t(100 * sinf(2 * M_PI - lineDirectionAngle));

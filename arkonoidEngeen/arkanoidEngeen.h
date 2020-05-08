@@ -55,9 +55,9 @@ typedef struct ArkanoidConfig{
 typedef struct ArkanoidDeskriptor *ArkanoidH;
 
 ArkanoidH      arkanoidInit(ArkanoidConfig arkanoidConfig);
-ArkanoidStatus arkanoidSetSpeed(ArkanoidH arkanoidItem, uint8_t ballSpeed);
-ArkanoidStatus arkanoidUpdate(ArkanoidH arkanoidItem, uint32_t time);
-ArkanoidStatus arkanoidSetDirection(ArkanoidH arkanoidItem, int32_t dirLen, int32_t dirX, int32_t dirY);
+ArkanoidStatus arkanoidSetPointsPerFrame(ArkanoidH arkanoidItem, uint8_t pointsPerFrame);
+ArkanoidStatus arkanoidUpdate(ArkanoidH arkanoidItem);
+ArkanoidStatus arkanoidSetDirection(ArkanoidH arkanoidItem, int32_t dirX, int32_t dirY);
 ArkanoidStatus arkanoidSetPlatformSize(ArkanoidH arkanoidItem, int32_t width, int32_t height);
 ArkanoidStatus arkanoidSetPlatformPos(ArkanoidH arkanoidItem, int32_t x, int32_t y);
 ArkanoidStatus arkanoidSetBallPos(ArkanoidH arkanoidItem, int32_t x, int32_t y);
